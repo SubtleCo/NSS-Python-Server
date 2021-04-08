@@ -1,13 +1,33 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from animals import get_all_animals
+from animals import get_all_animals, get_single_animal, create_animal
+from locations import get_single_location, get_all_locations
+from employees import get_single_employee, get_all_employees
+from customers import get_single_customer, get_all_customers
+import json
 
 # Here's a class. It inherits from another class.
 # For now, think of a class as a container for functions that
 # work together for a common purpose. In this case, that
 # common purpose is to respond to HTTP requests from a client.
+
+
 class HandleRequests(BaseHTTPRequestHandler):
+    def parse_url(self, path):
+        path_params = path.split("/")
+        resource = path_params[1]
+        id = None
+
+        try:
+            id = int(path_params[2])
+        except IndexError:
+            pass
+        except ValueError:
+            pass
+
+        return (resource, id)
 
     # Here's a class function
+
     def _set_headers(self, status):
         self.send_response(status)
         self.send_header('Content-type', 'application/json')
@@ -18,8 +38,10 @@ class HandleRequests(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
-        self.send_header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept')
+        self.send_header('Access-Control-Allow-Methods',
+                         'GET, POST, PUT, DELETE')
+        self.send_header('Access-Control-Allow-Headers',
+                         'X-Requested-With, Content-Type, Accept')
         self.end_headers()
 
     # Here's a method on the class that overrides the parent's method.
@@ -31,14 +53,35 @@ class HandleRequests(BaseHTTPRequestHandler):
         # Your new console.log() that outputs to the terminal
         print(self.path)
 
-        # It's an if..else statement
-        if self.path == "/animals":
-            # In Python, this is a list of dictionaries
-            # In JavaScript, you would call it an array of objects
-            response = get_all_animals()
-        else:
-            response = []
+        resource, id = self.parse_url(self.path)
 
+        if resource == "animals":
+            if id is not None:
+                response = f"{get_single_animal(id)}"
+
+            else:
+                response = f"{get_all_animals()}"
+
+        if resource == "locations":
+            if id is not None:
+                response = f"{get_single_location(id)}"
+
+            else:
+                response = f"{get_all_locations()}"
+
+        if resource == "employees":
+            if id is not None:
+                response = f"{get_single_employee(id)}"
+
+            else:
+                response = f"{get_all_employees()}"
+
+        if resource == "customers":
+            if id is not None:
+                response = f"{get_single_customer(id)}"
+
+            else:
+                response = f"{get_all_customers()}"
         # This weird code sends a response back to the client
         self.wfile.write(f"{response}".encode())
 
@@ -50,12 +93,21 @@ class HandleRequests(BaseHTTPRequestHandler):
 
         content_len = int(self.headers.get('content-length', 0))
         post_body = self.rfile.read(content_len)
-        response = f"received post request:<br>{post_body}"
-        self.wfile.write(response.encode())
 
+        post_body = json.loads(post_body)
+
+        resource, id = self.parse_url(self.path)
+
+        new_animal = None
+
+        if resource == "animals":
+            new_animal = create_animal(post_body)
+
+        self.wfile.write(f"{new_animal}".encode())
 
     # Here's a method on the class that overrides the parent's method.
     # It handles any PUT request.
+
     def do_PUT(self):
         self.do_POST()
 
@@ -66,6 +118,7 @@ def main():
     host = ''
     port = 8088
     HTTPServer((host, port), HandleRequests).serve_forever()
+
 
 if __name__ == "__main__":
     main()
