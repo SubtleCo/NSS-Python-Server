@@ -1,8 +1,8 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from animals import get_all_animals, get_single_animal, create_animal, delete_animal, update_animal
+from customers import get_single_customer, get_all_customers, create_customer, delete_customer, update_customer
 from locations import get_single_location, get_all_locations, create_location, delete_location
 from employees import get_single_employee, get_all_employees, create_employee, delete_employee
-from customers import get_single_customer, get_all_customers, create_customer, delete_customer
 import json
 
 # Here's a class. It inherits from another class.
@@ -82,7 +82,6 @@ class HandleRequests(BaseHTTPRequestHandler):
 
             else:
                 response = f"{get_all_customers()}"
-                
 
         # This weird code sends a response back to the client
         self.wfile.write(f"{response}".encode())
@@ -126,6 +125,8 @@ class HandleRequests(BaseHTTPRequestHandler):
 
         if resource == "animals":
             update_animal(id, post_body)
+        elif resource == "customers":
+            update_customer(id, post_body)
 
         self.wfile.write("".encode())
 
@@ -146,6 +147,8 @@ class HandleRequests(BaseHTTPRequestHandler):
 
 # This function is not inside the class. It is the starting
 # point of this application.
+
+
 def main():
     host = ''
     port = 8088
