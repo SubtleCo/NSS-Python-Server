@@ -1,3 +1,4 @@
+from animals.request import delete_animal
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from animals import get_all_animals, get_single_animal, create_animal
 from locations import get_single_location, get_all_locations, create_location
@@ -119,6 +120,14 @@ class HandleRequests(BaseHTTPRequestHandler):
     def do_PUT(self):
         self.do_POST()
 
+    def do_DELETE(self):
+        self._set_headers(204)
+        resource, id = self.parse_url(self.path)
+
+        if resource == "animals":
+            delete_animal(id)
+
+        self.wfile.write("".encode())
 
 # This function is not inside the class. It is the starting
 # point of this application.

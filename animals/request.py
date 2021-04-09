@@ -51,3 +51,13 @@ def create_animal(animal):
     ANIMALS.append(animal)
 
     return animal
+
+def delete_animal(id):
+    animal_index = -1
+
+    for index, animal in enumerate(ANIMALS):
+        if animal["id"] == id:
+            animal_index = index
+
+    if animal_index >= 0:
+        ANIMALS.pop(animal_index)
