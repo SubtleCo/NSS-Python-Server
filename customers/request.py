@@ -62,6 +62,30 @@ def get_single_customer(id):
       customer = Customer(data['id'], data['name'], data['email'])
       return json.dumps(customer.__dict__)
 
+def get_customer_by_email(email):
+    with sqlite3.connect("./kennel.db") as conn:
+      conn.row_factory = sqlite3.Row
+      db_cursor = conn.cursor()
+
+      db_cursor.execute("""
+      SELECT
+        c.id,
+        c.name,
+        c.email
+      FROM customer c
+      WHERE c.email = ?
+      """, (email, ))
+
+      customers = []
+
+      dataset = db_cursor.fetchall()
+
+      for row in dataset:
+        customer = Customer(row['id'], row['name'], row['email'])
+        customers.append(customer.__dict__)
+
+    return json.dumps(customers)
+
 def create_customer(customer):
   max_id = CUSTOMERS[-1]["id"]
   new_id = max_id + 1

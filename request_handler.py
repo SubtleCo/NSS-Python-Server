@@ -1,7 +1,8 @@
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from animals import get_all_animals, get_single_animal, create_animal, delete_animal, update_animal
-from customers import get_single_customer, get_all_customers, create_customer, delete_customer, update_customer
-from employees import get_single_employee, get_all_employees, create_employee, delete_employee, update_employee
+from animals.request import get_animals_by_status
+from http.server import BaseHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
+from animals import get_all_animals, get_single_animal, create_animal, delete_animal, update_animal, get_animals_by_location
+from customers import get_single_customer, get_all_customers, create_customer, delete_customer, update_customer, get_customer_by_email
+from employees import get_single_employee, get_all_employees, create_employee, delete_employee, update_employee, get_employees_by_location
 from locations import get_single_location, get_all_locations, create_location, delete_location, update_location
 import json
 
@@ -15,16 +16,24 @@ class HandleRequests(BaseHTTPRequestHandler):
     def parse_url(self, path):
         path_params = path.split("/")
         resource = path_params[1]
-        id = None
 
-        try:
-            id = int(path_params[2])
-        except IndexError:
-            pass
-        except ValueError:
-            pass
+        if "?" in resource:
+            resource, param = resource.split("?")
+            key, value = param.split("=")
 
-        return (resource, id)
+            return (resource, key, value)
+            
+        else:
+            id = None
+
+            try:
+                id = int(path_params[2])
+            except IndexError:
+                pass
+            except ValueError:
+                pass
+
+            return (resource, id)
 
     # Here's a class function
 
@@ -51,37 +60,55 @@ class HandleRequests(BaseHTTPRequestHandler):
         self._set_headers(200)
 
         # Your new console.log() that outputs to the terminal
-        print(self.path)
+        response = {}
 
-        resource, id = self.parse_url(self.path)
+        parsed = self.parse_url(self.path)
 
-        if resource == "animals":
-            if id is not None:
-                response = f"{get_single_animal(id)}"
+        if len(parsed) == 2:
+            resource, id = parsed
 
-            else:
-                response = f"{get_all_animals()}"
+            if resource == "animals":
+                if id is not None:
+                    response = f"{get_single_animal(id)}"
 
-        if resource == "locations":
-            if id is not None:
-                response = f"{get_single_location(id)}"
+                else:
+                    response = f"{get_all_animals()}"
 
-            else:
-                response = f"{get_all_locations()}"
+            if resource == "locations":
+                if id is not None:
+                    response = f"{get_single_location(id)}"
 
-        if resource == "employees":
-            if id is not None:
-                response = f"{get_single_employee(id)}"
+                else:
+                    response = f"{get_all_locations()}"
 
-            else:
-                response = f"{get_all_employees()}"
+            if resource == "employees":
+                if id is not None:
+                    response = f"{get_single_employee(id)}"
 
-        if resource == "customers":
-            if id is not None:
-                response = f"{get_single_customer(id)}"
+                else:
+                    response = f"{get_all_employees()}"
 
-            else:
-                response = f"{get_all_customers()}"
+            if resource == "customers":
+                if id is not None:
+                    response = f"{get_single_customer(id)}"
+
+                else:
+                    response = f"{get_all_customers()}"
+        
+        elif len(parsed) == 3:
+            resource, key, value = parsed
+
+            if key == "email" and resource == "customers":
+                response = f"{get_customer_by_email(value)}"
+
+            if key == "location_id" and resource == "animals":
+                response = f"{get_animals_by_location(value)}"
+
+            if key == "location_id" and resource == "employees":
+                response = f"{get_employees_by_location(value)}"
+
+            if key == "status" and resource == "animals":
+                response = f"{get_animals_by_status(value)}"
 
         # This weird code sends a response back to the client
         self.wfile.write(f"{response}".encode())
