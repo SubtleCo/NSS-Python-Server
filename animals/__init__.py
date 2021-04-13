@@ -3,4 +3,5 @@ from .request import ( get_all_animals,
                        create_animal,
                        delete_animal,
                        update_animal,
-                       get_animals_by_location )
+                       get_animals_by_location,
+                       get_animals_by_status )

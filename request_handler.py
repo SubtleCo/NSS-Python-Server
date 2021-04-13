@@ -1,3 +1,4 @@
+from animals.request import get_animals_by_status
 from http.server import BaseHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
 from animals import get_all_animals, get_single_animal, create_animal, delete_animal, update_animal, get_animals_by_location
 from customers import get_single_customer, get_all_customers, create_customer, delete_customer, update_customer, get_customer_by_email
@@ -105,6 +106,9 @@ class HandleRequests(BaseHTTPRequestHandler):
 
             if key == "location_id" and resource == "employees":
                 response = f"{get_employees_by_location(value)}"
+
+            if key == "status" and resource == "animals":
+                response = f"{get_animals_by_status(value)}"
 
         # This weird code sends a response back to the client
         self.wfile.write(f"{response}".encode())
