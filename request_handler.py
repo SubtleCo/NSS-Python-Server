@@ -1,6 +1,6 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
 from animals import get_all_animals, get_single_animal, create_animal, delete_animal, update_animal
-from customers import get_single_customer, get_all_customers, create_customer, delete_customer, update_customer
+from customers import get_single_customer, get_all_customers, create_customer, delete_customer, update_customer, get_customer_by_email
 from employees import get_single_employee, get_all_employees, create_employee, delete_employee, update_employee
 from locations import get_single_location, get_all_locations, create_location, delete_location, update_location
 import json
@@ -98,7 +98,7 @@ class HandleRequests(BaseHTTPRequestHandler):
             resource, key, value = parsed
 
             if key == "email" and resource == "customers":
-                ############################################
+                response = f"{get_customer_by_email(value)}"
 
         # This weird code sends a response back to the client
         self.wfile.write(f"{response}".encode())
