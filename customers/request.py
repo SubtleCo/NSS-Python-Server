@@ -28,7 +28,9 @@ def get_all_customers():
       SELECT
         c.id,
         c.name,
-        c.email
+        c.address,
+        c.email,
+        c.password
       FROM customer c
       """)
 
@@ -37,7 +39,7 @@ def get_all_customers():
       dataset = db_cursor.fetchall()
 
       for row in dataset:
-        customer = Customer(row['id'], row['name'], row['email'])
+        customer = Customer(row['id'], row['name'], row['address'], row['email'], row['password'])
         customers.append(customer.__dict__)
 
     return json.dumps(customers)
@@ -52,14 +54,16 @@ def get_single_customer(id):
       SELECT
         c.id,
         c.name,
-        c.email
+        c.address,
+        c.email,
+        c.password
       FROM customer c
       WHERE c.id = ?
       """, (id, ))
 
       data = db_cursor.fetchone()
 
-      customer = Customer(data['id'], data['name'], data['email'])
+      customer = Customer(data['id'], data['name'], data['address'], data['email'], data['password'])
       return json.dumps(customer.__dict__)
 
 def get_customer_by_email(email):
@@ -71,7 +75,9 @@ def get_customer_by_email(email):
       SELECT
         c.id,
         c.name,
-        c.email
+        c.address,
+        c.email,
+        c.password
       FROM customer c
       WHERE c.email = ?
       """, (email, ))
@@ -81,7 +87,7 @@ def get_customer_by_email(email):
       dataset = db_cursor.fetchall()
 
       for row in dataset:
-        customer = Customer(row['id'], row['name'], row['email'])
+        customer = Customer(row['id'], row['name'], row['address'], row['email'], row['password'])
         customers.append(customer.__dict__)
 
     return json.dumps(customers)
