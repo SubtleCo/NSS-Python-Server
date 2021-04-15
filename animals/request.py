@@ -104,6 +104,7 @@ def get_single_animal(id):
             a.location_id,
             a.customer_id
         FROM animal a
+
         WHERE a.id = ?
         """, (id, ))
 
@@ -112,6 +113,7 @@ def get_single_animal(id):
         animal = Animal(data['id'], data['name'], data['breed'],
                         data['status'], data['location_id'],
                         data['customer_id'])
+
         return json.dumps(animal.__dict__)
 
 
@@ -175,16 +177,31 @@ def get_animals_by_status(status):
     return json.dumps(animals)
 
 
-def create_animal(animal):
-    max_id = ANIMALS[-1]["id"]
+def create_animal(new_animal):
+    with sqlite3.connect("./kennel.db") as conn:
+        db_cursor = conn.cursor()
 
-    new_id = max_id + 1
+        db_cursor.execute("""
+        INSERT INTO Animal
+            ( name, breed, status, location_id, customer_id )
+        VALUES
+            ( ?, ?, ?, ?, ?);
+        """, (new_animal['name'], new_animal['breed'],
+              new_animal['status'], new_animal['locationId'],
+              new_animal['customerId'], ))
 
-    animal["id"] = new_id
+        # The `lastrowid` property on the cursor will return
+        # the primary key of the last thing that got added to
+        # the database.
+        id = db_cursor.lastrowid
 
-    ANIMALS.append(animal)
+        # Add the `id` property to the animal dictionary that
+        # was sent by the client so that the client sees the
+        # primary key in the response.
+        new_animal['id'] = id
 
-    return animal
+
+    return json.dumps(new_animal)
 
 
 def delete_animal(id):
